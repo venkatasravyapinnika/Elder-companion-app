@@ -2,18 +2,130 @@
 <html>
 <head>
 <title>Elder Companion App</title>
+<style>
+body{
+    font-family:Arial;
+    background-color:#f0f8ff;
+    text-align:center;
+}
+h1{
+    color:#2c3e50;
+}
+button{
+    background-color: #4CAF50;
+    color:white;
+    border: none;
+    padding:20px 35px;
+    margin:10px;
+    font-size:22px;
+    border-radius:10px;
+    width:260px;
+}
+button:hover{
+    background-color: #45a049;
+}
+input{
+    font-size:20px;
+    padding:10px;
+    margin:10px;
+    width:200px;
+
+}
+
+</style>
 </head>
 
 <body>
 
 <h1>Welcome to Elder Companion App</h1>
 
-<p>This app helps elderly people remember medicines and doctor appointments.</p>
+<p>This app helps elderly people to stay safe and healthy and to improve their individuality.</p>
 
-<button>Medicine Reminder</button>
+<a href = "/medicine">
+<button>Medicine Reminder</button>    
+</a>
+
 <br><br>
 
+<a href="/doctor">
 <button>Doctor Appointment Reminder</button>
+</a>
+
+<br><br>
+
+<a href="/exercise">
+<button>Daily Exercise Guide</button>
+</a>
+
+<br><br>
+
+<a href="https://meet.google.com" 
+target = "_blank">
+<button>🎥 Video Call Family</button>
+</a>   
+
+<br><br>
+
+<a href="tel:112">
+<button>🚨 Emergency Call</button>
+</a>
+
+<br><br>
+
+<a href="tel:+911234567890">
+<button>📞 Call Family</button>   
+</a>
+
+<br><br>
+
+<a href="sms:+911234567890?body=I%20need%20help">
+<button>💬 Send SMS Alerts</button>
+</a>
+
+<br><br>
+
+<a href="https://www.google.com/maps">
+<button>📍Share Location</button>
+</a>
+
+<br><br>
+
+<button onclick="startVoice()">Voice Assistant</button>
+
+<script>
+    function startVoice(){
+        const recognition = new(window.SpecchRecognition||window.webkitSpeechRecognition)();
+
+        recognation = recognition;
+        recognition.onstart = function(){
+            alert("Listening...Speak now");
+        };
+        recognition.onresult = function(event){
+            let command = event.results[0][0].transcript.toLowerCase();
+            alert("You said: " + command);
+            if(command.includes("medicine")){
+                window.location.href="/medicine";
+            }
+            else if(command.includes("doctor")){
+                window.location.href="/doctor";
+            }
+            else if(command.includes("exercise")){
+                window.location.href="/exercise";
+            }
+            else if(command.includes("health")){
+                window.location.href="/healthcare";
+            }
+            else if(command.includes("emergency")){
+                window.location.href="tel:112";
+            }
+            else{
+                alert("Command not recognized")
+            }
+
+        };
+        recognition.start();
+    }
+</script>
 
 </body>
 </html>
