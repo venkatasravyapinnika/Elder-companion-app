@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health & Exercise</title>
+    <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <h2>🏃‍♂️ Health &Exercise Tracking</h2>
+        <!--❤️ Heart Rate-->
+        <h3>❤️ Heart Rate Monitor</h3>
+        <input type="number" id="heartRate" placeholder="Enter BPM">
+        <button onclick="checkHeart()"></button>
+        <p id="heartResult"></p>
+        <hr>
+        <!--🚶 steps-->
+        <h3>🚶 steps Tracker</h3>
+        <input type="number" id="steps" placeholder="Enter steps">
+        <button onclick="saveSteps()">Save Steps</button>
+        <p id="stepsResult"></p>
+        <hr>
+        <!--🫁 Breathing Exercise-->
+        <h3>🫁 Beathing Exercise</h3>
+        <button onclick="startBreathing()">Start Breathing</button>
+        <p id="breathText"></p>
+        <hr>
+        <!--🏃‍♂️ Tips-->
+        <h3>💡 Exercise Tips</h3>
+        <p>✔️ Walk 15-20 minutes daily</p>
+        <p>✔️ Do stretching</p>
+        <p>✔️ stay hydrated</p>
+        <br>
+        <a href="/"> Back to Home</a>
+        <script src="/static/script.js"></script>
+</body>
+</html>

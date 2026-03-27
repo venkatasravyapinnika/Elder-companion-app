@@ -1,126 +1,144 @@
-from flask import Flask,render_template
+from flask import Flask,render_template,request,redirect,session
+import sqlite3
+from apscheduler.schedulers.background import BackgroundScheduler
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+app.secret_key ="elder_app_secret_123"
+@app.route('/register',methods=['GET','POST'])
+def register():
+     if request.method=='POST':
+          username = request.form['username']
+          password = request.form['password']
+          conn = sqlite3.connect("elder.db")
+          cursor = conn.cursor()
+          cursor.execute("INSERT INTO users(username,password) VALUES(?,?)",(username,password))
+          conn.commit()
+          conn.close()
+          return redirect('/login')
+     return render_template('register.html')
 
+@app.route('/login',methods=['GET','POST'])
+def login():
+     if request.method =='POST':
+          username = request.form['username']
+          password = request.form['password']
+          conn = sqlite3.connect("elder.db")
+          cursor = conn.cursor()
+          user = cursor.execute("SELECT *FROM users WHERE username=? AND password=?",(
+               username,password)).fetchone()
+          conn.close()
+          if user:
+               session['user'] = username
+               return redirect('/')
+          else:
+               return "Invalid logic"
+     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+     session.pop('user',None)
+     return redirect('/login')
+          
+#---------------DATABASE--------
+def init_db():
+     conn = sqlite3.connect("elder.db")
+     cursor = conn.cursor()
+     #medicine:
+     cursor.execute("""CREATE TABLE IF NOT EXISTS medicines (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT, time TEXT)
+                     """)
+     #users:
+     cursor.execute("""CREATE TABLE IF NOT EXISTS users(
+                    id INTEGER PRIMARY KEY,username TEXT,
+                    password TEXT)
+                    """)
+     #appointments:
+     cursor.execute("""CREATE TABLE IF NOT EXISTS appointments(
+                    id INTEGER PRIMARY KEY,
+                    doctor TEXT ,date TEXT)""")
+     conn.commit()
+     conn.close()
+#---------------ADD MEDICINES
+
+@app.route('/add_medicine',methods =['POST'])
+def add_medicine():
+    name = request.form['name']
+    time = request.form['time']
+    conn = sqlite3.connect("elder.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO medicines (name,time)  VALUES(?,?)",(name,time))
+    conn.commit()
+    conn.close()
+    return redirect('/medicine')
+#------------------SHOW MEDICINES
 @app.route('/medicine')
 def medicine():
-     return """
-     <h2>Medicine Reminder</h2>
-     <p>Set the time to take your medicine (only once):</p>
+     conn = sqlite3.connect("elder.db")
+     cursor = conn.cursor()
+     data = cursor.execute("SELECT * FROM medicines").fetchall()
+     conn.close()
+     return render_template("medicine.html",medicines= data)
 
-     <input type = "time" id="medtime">
-     <button onclick="saveTime()">Save Reminder</button>
-     <button onclick="clearTime()">Remove Time</button>
-     <br><br>
-     <a href="/">Back to Home</a>
-     <script>
-     function saveTime(){
-     var time =document.getElementById("medtime").value;
-     localStorage.setItem("medicine_time",time);
-     alert("Medicine reminder saved at " + time);
-     }
-     function clearTime(){
-     document.getElementById("medtime").value="";
-     localStorage.removeItem("medicine_time");
-     alert("Medicine reminder removed");
-     }
-     function checkReminder(){
-        var savedTime=localStorage.getItem("medicine_time");
-        if(savedTime){
-        var now = new Date();
-        var hours = now.getHours().toString().padStart(2,'0');
-        var minutes= now.getMinutes().toString().padStart(2,'0');
-        var current = hours + ":" + minutes;
-          if(current==savedTime){
-          alert("💊Time to take  your medicine !");
-          var audio = new Audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3");
-          audio.loop = true;
-          audio.play();
-        }
-
-        }
-     }
-     setInterval(checkReminder,60000);
-     </script>
-    """
+#-----------APPOINTMENTS---------
+@app.route('/add_appointment',methods = ['POST'])
+def add_appointment():
+     doctor = request.form['doctor']
+     date = request.form['date']
+     conn = sqlite3.connect("elder.db")
+     cursor = conn.cursor()
+     cursor.execute("INSERT INTO appointments(doctor,date) VALUES(?, ?)",
+                    (doctor,date))
+     conn.commit()
+     conn.close()
+     return redirect('/doctor')
 @app.route('/doctor')
 def doctor():
-     return"""
-     <h2>Doctor Appointment</h2>
-     <p>Set your doctor appointment:</p>
-     Appointment Date:<br>
-     <input type ="date" id="date"><br><br>
-     Appointment Time:<br>
-     <input type="time" id="time"><br><br>
-     <button onclick = "saveAppointment()">SaveAppointment</button>
-     <button onclick="removeAppointment()">RemoveAppointment</button>
-     <br><br>
-     <a href="/">Back to Home</a>
-     <script>
-     function saveAppointment(){
-     var date = document.getElementById("date").value;
-     var time = document.getElementById("time").value;
-     localStorage.setItem("appointment_date", date);
-     localStorage.setItem("appointment_time", time);
-     alert("Doctor appointment saved on" + date + "at" + time);
-     }
-     function removeAppointment(){
-     localStorage.removeItem("appointment_date");
-     localStorage.removeItem("appointment_time");
-     alert("Appointment removed");
-     }
-     function checkDoctorReminder(){
-     var savedDate = localStorage.getItem("appointment_date");
-     var savedTime = localStorage.getItem("appointment_time");
-     if(savedDate && savedTime){
-     var now = new Date();
-     var today = now.toISOString().split("T")[0];
-     var hour = now.getHours().toString().padStart(2,'0');
-     var minutes = now.getMinutes().toString().padStart(2,'0');
-     var currentTime = hours + ":" + minutes;
-     if (today === savedDate && curentTime ===savedTime){
-     alert("🔔Time for your doctor appointment!");
-     var audio = new
-     audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3");
-     audio.loop = true;
-     audio.play();
-            }
-        }
-     }
-     setInterval(checkDoctorReminder, 60000);
-     
-     </script>
-     """
-
+     conn = sqlite3.connect("elder.db")
+     cursor = conn.cursor()
+     data = cursor.execute("SELECT * FROM appointments").fetchall()
+     conn.close()
+     return render_template("doctor.html",appointments=data)
 
 @app.route('/exercise')
 def exercise():
-     return """
-    <h2>Healthy Activities for Elderly</h2>
-    <h3>🚶 Walking</h3>
-    <p>walk for 15-20 minutes daily to improve circulation and joint mobility.</p>
-    <h3>🫁 Breathing Exercise</h3>
-    <p>slow deep breathing for 5 minutes helps lung capacity and relaxation.</p>
-    <h3>❤️ Heart Tracking </h3>
-    <p>normal resting heart rate: 60-100 BPM.</p>
-    <br>
-    <a href="/">Back to Home</a>
-    """
+     return render_template("exercise.html")
 
 @app.route('/healthcare')
 def healthtips():
-     return"""
-    <h2>🩺 Health Tips for Elderly</h2> 
-    <ul>
-    <li>💧 Drink enough water</li>
-    <li>🚶‍♂️ walking daily</li>
-    <li>💊 Take medicines on time</li>
-    </ul>
-    <a href="/">Back</a>
-    """
-                                                                                                                       
+     return render_template("healthcare.html")
+
+@app.route('/video')
+def video():
+     return render_template('video.html')
+
+@app.route('/emergency',methods=['POST'])
+def emergency():
+     lat = request.form['lat']
+     lon = request.form['lon']
+     print("Emergency Location:",lat,lon)
+     return "EMERGENCY alert sent !"
+
+#-----MEDICINE CHECK----
+def check_medicines():
+     conn = sqlite3.connect("elder.db")
+     cursor = conn.cursor()
+     meds = cursor.execute("SELECT name,time FROM medicines").fetchall()
+     conn.close()
+     print("Medicine Reminder:",meds)
+
+#----------APPOINTMENT CHECK--------
+def check_appointments():
+     conn = sqlite3.connect("elder.db")
+     cursor = conn.cursor()
+     appointments = cursor.execute("SELECT doctor,date FROM appointments").fetchall()
+     conn.close()
+     print("Appointment Reminder:",appointments)
+#-----SCHEDULER-------
+scheduler = BackgroundScheduler()
+scheduler.add_job(check_medicines,'interval',minutes=1)
+scheduler.add_job(check_appointments,'interval',minutes=1)
+scheduler.start()                                                               
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",port=5000,debug=True)
+   init_db()   
+   app.run(host="0.0.0.0",port=5000,debug=True)
