@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>video call</title>
+    <script
+src="https://download.Agora.io/sdk/release/AgoraRTC_N-4.7.3.js"></script>
+
+</head>
+<body>
+    <h2>Video Call</h2>
+    <div id="local"
+style="width:300px;height:200px;background:black;"></div>
+<button onclick="startCall()">Start Call</button>
+<script>
+    const App_ID  = "your_actual_app_id_here"; //replace this
+    const CHANNEL = "elder-room";
+    const client = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
+    async function startCall(){
+       await client.join(APP_ID, CHANNEL, null, null);
+       const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+       const localVideo = tracks[1];
+       localVideo.play("local");
+       await client.publish(tracks);
+       
+       client.on("user-published", async(user, mediaType)=>{
+        await client.subscribe(user, mediaType);
+        if (mediaType ==="video"){
+            user.videotrack.play("remote");
+        }
+        if(mediaType === "audio"){
+            user.audioTrack.play();
+        }
+       });
+    }
+</script>
+</body>
+</html>

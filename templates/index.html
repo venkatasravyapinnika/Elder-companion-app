@@ -93,7 +93,7 @@ input{
     function startVoice(){
         const recognition = new(window.SpecchRecognition||window.webkitSpeechRecognition)();
 
-        recognation = recognition;
+        
         recognition.onstart = function(){
             alert("Listening...Speak now");
         };
