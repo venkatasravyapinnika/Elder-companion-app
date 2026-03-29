@@ -2,6 +2,9 @@ from flask import Flask,render_template,request,redirect,session
 import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 app = Flask(__name__)
+@app.route("/")
+def home():
+     return render_template("index.html")
 
 app.secret_key ="elder_app_secret_123"
 @app.route('/register',methods=['GET','POST'])
