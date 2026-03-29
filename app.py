@@ -27,7 +27,7 @@ def login():
           password = request.form['password']
           conn = sqlite3.connect("elder.db")
           cursor = conn.cursor()
-          user = cursor.execute("SELECT *FROM users WHERE username=? AND password=?",(
+          user = cursor.execute("SELECT * FROM users WHERE username=? AND password=?",(
                username,password)).fetchone()
           conn.close()
           if user:
@@ -143,5 +143,5 @@ scheduler.add_job(check_medicines,'interval',minutes=1)
 scheduler.add_job(check_appointments,'interval',minutes=1)
 scheduler.start()                                                               
 if __name__ == "__main__":
-   init_db()   
+   init_db()  
    app.run(host="0.0.0.0",port=5000,debug=True)
